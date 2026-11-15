@@ -180,10 +180,10 @@ async function main() {
 
   // ---- scroll story
   const beats = collectBeats();
-  let p = 0, dirty = true, visible = true, swished = false;
+  let p = 0, dirty = true, visible = true, swished = false, lastMove = 0, lastDribble = 0;
   ScrollTrigger.create({
     trigger: '#story', start: 'top top', end: 'bottom bottom',
-    onUpdate: self => { p = self.progress; dirty = true; },
+    onUpdate: self => { p = self.progress; dirty = true; lastMove = performance.now(); },
     onToggle: self => { visible = self.isActive || self.progress < 1; },
   });
   new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(document.querySelector('#story')!);
@@ -195,6 +195,9 @@ async function main() {
     if (document.hidden || !visible) return;
     const pose = poseAt(p);
     scene!.render(toPose(pose)); // renders every frame while visible (the ball floats)
+    // the walker dribbles while you scroll him forward
+    const now = performance.now();
+    if (audio.on && pose.walk > 0.5 && now - lastMove < 250 && now - lastDribble > 480) { audio.dribble(); lastDribble = now; }
     if (dirty) {
       paintBeats(beats, p);
       root.style.setProperty('--story-night', pose.night.toFixed(3));
