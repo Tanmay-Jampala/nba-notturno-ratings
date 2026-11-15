@@ -104,7 +104,11 @@ async function main() {
 
   // data + fonts in parallel with the scene
   const playersP = loadPlayers().then(p => { setProgress(0.55); return p; });
-  const fontsP = (document as any).fonts?.ready?.then(() => setProgress(0.4)) ?? Promise.resolve();
+  // never wait more than 3s on web fonts: the fallback faces are fine
+  const fontsP = Promise.race([
+    (document as any).fonts?.ready?.then(() => setProgress(0.4)) ?? Promise.resolve(),
+    new Promise(r => setTimeout(r, 3000)),
+  ]);
 
   let scene: Awaited<ReturnType<typeof import('./scene')['createScene']>> | null = null;
   if (!staticMode) {
@@ -210,6 +214,7 @@ function toPose(k: ReturnType<typeof poseAt>) {
   return { ...k, pos: v(k.pos), look: v(k.look) } as any;
 }
 
+(window as any).__storyReady = true;
 root.classList.add('gate-open');
 main().catch(err => {
   console.error(err);

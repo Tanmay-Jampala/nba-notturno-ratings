@@ -113,6 +113,15 @@ const cfg = META.config;
     <RankingTable view="league" caption="League rankings" />
   </section>
 
+  <script is:inline>
+    // watchdog: if the story bundle never runs (network failure, blocked script), don't leave the loader up
+    setTimeout(function () {
+      if (window.__storyReady) return;
+      document.documentElement.classList.add('story-static');
+      document.documentElement.classList.remove('gate-open');
+      var l = document.querySelector('[data-loader]'); if (l) l.remove();
+    }, 10000);
+  </script>
   <script>
     import '../scripts/home/story';
   </script>

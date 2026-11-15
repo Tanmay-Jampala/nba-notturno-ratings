@@ -6,3 +6,4 @@ data/raw/*.tmp
 __pycache__/
 .DS_Store
 *.log
+preview-shots/
