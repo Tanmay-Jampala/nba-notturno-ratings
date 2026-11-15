@@ -21,6 +21,10 @@ def run(cmd: list[str]) -> int:
 
 
 def main() -> int:
+    # the scheduled GitHub job also commits data/, so start from the latest main
+    if run(["git", "pull", "--rebase", "--autostash", "-q"]) != 0:
+        print("git pull failed; not updating.")
+        return 1
     if run([sys.executable, "scripts/fetch.py", "--source", "stats", "--label", "local"]) != 0:
         print("Fetch failed; nothing changed.")
         return 1
@@ -33,9 +37,20 @@ def main() -> int:
         print("No data changes.")
         return 0
     run(["git", "commit", "-m", "data: local update"])
-    if "--no-push" not in sys.argv:
-        return run(["git", "push"])
-    return 0
+    if "--no-push" in sys.argv:
+        return 0
+    if run(["git", "push", "-q"]) == 0:
+        return 0
+    # GitHub's job pushed in the meantime: replay ours on top, preferring our (full stats.nba.com) data
+    print("Push rejected; rebasing onto the latest main and retrying.")
+    if run(["git", "pull", "--rebase", "-X", "theirs", "-q"]) != 0:
+        run(["git", "rebase", "--abort"])
+        return 1
+    run([NPX, "tsx", "scripts/compute.ts"])
+    run(["git", "add", "public/data"])
+    if subprocess.call(["git", "diff", "--cached", "--quiet"], cwd=ROOT) != 0:
+        run(["git", "commit", "-q", "-m", "data: recompute after rebase"])
+    return run(["git", "push", "-q"])
 
 
 if __name__ == "__main__":
