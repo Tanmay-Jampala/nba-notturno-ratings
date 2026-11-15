@@ -10,8 +10,41 @@ import { mountCarousel } from './carousel';
 import { loadPlayers } from '../table';
 
 gsap.registerPlugin(ScrollTrigger);
+// height-only resizes on phones are the URL bar or the keyboard, not a new layout: don't recompute on them
+ScrollTrigger.config({ ignoreMobileResize: true });
 
 const root = document.documentElement;
+
+/**
+ * "Turn your phone upright" only for a phone that is physically in landscape, only while the 3D story is on
+ * screen, and never while a text field has focus (an open keyboard makes the viewport wider than tall).
+ */
+function setupRotatePrompt() {
+  const story = document.getElementById('story');
+  if (!story) return;
+  const coarse = matchMedia('(pointer: coarse)');
+  let storyVisible = false;
+  const typing = () => {
+    const el = document.activeElement as HTMLElement | null;
+    return !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable);
+  };
+  const landscapeDevice = () => {
+    const type = screen.orientation?.type;
+    if (type) return type.startsWith('landscape');
+    const o = (window as any).orientation;
+    return typeof o === 'number' ? Math.abs(o) === 90 : screen.width > screen.height;
+  };
+  const isPhone = () => coarse.matches && Math.min(screen.width, screen.height) < 600;
+  const update = () => root.classList.toggle('rotate-needed', isPhone() && landscapeDevice() && storyVisible && !typing());
+  new IntersectionObserver(([e]) => { storyVisible = e.isIntersecting; update(); }).observe(story);
+  screen.orientation?.addEventListener?.('change', update);
+  addEventListener('orientationchange', () => setTimeout(update, 300));
+  addEventListener('resize', update);
+  document.addEventListener('focusin', update);
+  document.addEventListener('focusout', () => setTimeout(update, 50));
+  update();
+}
+setupRotatePrompt();
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const store = {
   get(k: string) { try { return localStorage.getItem(k); } catch { return null; } },

@@ -20,7 +20,8 @@ const ogUrl = new URL(url(ogImage), Astro.site).href;
 <html lang="en" class="no-js">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- resizes-visual: the on-screen keyboard overlays the page instead of shrinking the layout (Chromium/Android) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-visual" />
   <title>{fullTitle}</title>
   <meta name="description" content={description} />
   <meta name="theme-color" content="#1d1d1d" />
@@ -42,6 +43,19 @@ const ogUrl = new URL(url(ogImage), Astro.site).href;
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Allura&family=Limelight&family=Manrope:wght@300;400;600&family=M+PLUS+Rounded+1c:wght@800&display=swap" media="print" onload="this.media='all'" />
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Allura&family=Limelight&family=Manrope:wght@300;400;600&family=M+PLUS+Rounded+1c:wght@800&display=swap" /></noscript>
   <script is:inline>document.documentElement.classList.replace('no-js', 'js');</script>
+  <script is:inline>
+    // --svh: a viewport-height unit that ignores the on-screen keyboard. It only updates when the width
+    // changes (rotation, window resize), never on height-only changes, so opening the keyboard on a phone
+    // can't collapse the page height and throw the reader to a different place.
+    (function () {
+      var root = document.documentElement, w = innerWidth;
+      var set = function () { root.style.setProperty('--svh', innerHeight / 100 + 'px'); };
+      set();
+      var check = function () { if (innerWidth !== w) { w = innerWidth; set(); } };
+      addEventListener('resize', check);
+      addEventListener('orientationchange', function () { setTimeout(check, 350); }); // a real rotation changes the width
+    })();
+  </script>
   <slot name="head" />
 </head>
 <body class={bodyClass} style={teamColor ? `--team:${teamColor}` : undefined}>

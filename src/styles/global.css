@@ -10,7 +10,7 @@ body {
   font: 300 var(--body) / 1.5 var(--font-body);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  min-height: 100vh;
+  min-height: calc(var(--svh, 1vh) * 100);
 }
 img, svg, canvas { display: block; max-width: 100%; }
 a { color: inherit; text-decoration: none; }

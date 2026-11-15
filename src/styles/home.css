@@ -51,18 +51,18 @@ html.gate-open, html.gate-open body { overflow: hidden; }
 @keyframes eq { from { transform: scaleY(0.35); } to { transform: scaleY(1); } }
 @media (prefers-reduced-motion: reduce) { .sound__bars i { animation: none !important; } }
 
-/* ---------- rotate prompt (phones in landscape, story only) */
+/* ---------- rotate prompt (phones in landscape, story only)
+   Driven by story.ts from the physical screen orientation, not the viewport's shape: an open on-screen
+   keyboard makes a portrait viewport wider than it is tall, which must not trigger this. */
 .rotate { display: none; }
-@media (orientation: landscape) and (max-height: 500px) and (hover: none) and (pointer: coarse) {
-  html:not(.story-static) .rotate {
-    display: grid; place-content: center; justify-items: center; gap: 16px; text-align: center;
-    position: fixed; inset: 0; z-index: 95; background: var(--bg);
-  }
+html.rotate-needed:not(.story-static) .rotate {
+  display: grid; place-content: center; justify-items: center; gap: 16px; text-align: center;
+  position: fixed; inset: 0; z-index: 95; background: var(--bg);
 }
 
 /* ---------- story */
-.story { position: relative; height: 900vh; }
-.story__stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
+.story { position: relative; height: calc(var(--svh, 1vh) * 900); }
+.story__stage { position: sticky; top: 0; height: calc(var(--svh, 1vh) * 100); overflow: hidden; }
 .story__canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 .beat { position: absolute; inset: 0; opacity: 0; visibility: hidden; pointer-events: none; will-change: opacity, transform; }
 .beat__h { margin: 0; }
@@ -108,7 +108,7 @@ html.story-static .story__stage { position: static; height: auto; overflow: visi
 html.story-static .story__canvas, html.story-static .frame { display: none; }
 html.story-static .beat {
   position: relative; inset: auto; opacity: 1 !important; visibility: visible !important; transform: none !important;
-  min-height: 70vh; display: grid; align-content: center; gap: 28px; padding: 120px var(--gutter);
+  min-height: calc(var(--svh, 1vh) * 70); display: grid; align-content: center; gap: 28px; padding: 120px var(--gutter);
   background: var(--paper); color: var(--ink); border-bottom: 3px solid var(--ink);
 }
 html.story-static .beat > * { position: static !important; max-width: 60ch; margin: 0 auto; inset: auto; transform: none !important; white-space: normal !important; }
@@ -119,7 +119,7 @@ html.story-static .beat__h { max-width: none !important; text-align: center; }
 
 /* ---------- manifesto (red) */
 .manifesto {
-  position: relative; background: var(--accent); color: var(--ink); padding: clamp(96px, 16vh, 180px) var(--gutter) clamp(96px, 14vh, 160px);
+  position: relative; background: var(--accent); color: var(--ink); padding: clamp(96px, calc(var(--svh, 1vh) * 16), 180px) var(--gutter) clamp(96px, calc(var(--svh, 1vh) * 14), 160px);
   text-align: center; overflow: hidden;
 }
 .manifesto .xtext { color: var(--ink); }
@@ -133,7 +133,7 @@ html.story-static .beat__h { max-width: none !important; text-align: center; }
 @media (max-width: 767px) { .mani__side { display: none; } .mani__p { text-align: left; } }
 
 /* ---------- carousel */
-.select { padding: clamp(96px, 14vh, 160px) var(--gutter) 40px; max-width: var(--max); margin: 0 auto; }
+.select { padding: clamp(96px, calc(var(--svh, 1vh) * 14), 160px) var(--gutter) 40px; max-width: var(--max); margin: 0 auto; }
 .car { position: relative; margin-top: 56px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 24px; }
 .car:focus-visible { outline-offset: 8px; }
 .car__track { list-style: none; margin: 0; padding: 0; display: grid; overflow: hidden; touch-action: pan-y; }
@@ -164,7 +164,7 @@ html.story-static .beat__h { max-width: none !important; text-align: center; }
 @media (prefers-reduced-motion: reduce) { .car__slide { transition: none; transform: none; } }
 
 /* ---------- collection */
-.collection { padding: clamp(96px, 14vh, 160px) var(--gutter); text-align: center; }
+.collection { padding: clamp(96px, calc(var(--svh, 1vh) * 14), 160px) var(--gutter); text-align: center; }
 .collection__links { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; margin-top: 56px; }
 .league { padding-top: 40px; }
 

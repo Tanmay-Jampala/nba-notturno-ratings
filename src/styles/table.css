@@ -1,5 +1,5 @@
 /* ---------- ranking table island */
-.ranking { position: relative; min-height: 90vh; } /* reserve space so the table doesn't shift the page when it mounts */
+.ranking { position: relative; min-height: calc(var(--svh, 1vh) * 90); } /* reserve space so the table doesn't shift the page when it mounts */
 .rt__err, .rt__empty { color: var(--fg-muted); padding: 32px 0; text-align: center; }
 .rt__tabs { display: flex; justify-content: center; gap: 16px; margin: 0 0 40px; flex-wrap: wrap; }
 .rt__controls { display: flex; flex-wrap: wrap; gap: 16px 20px; align-items: end; margin-bottom: 18px; }
@@ -16,7 +16,7 @@
 .rt__count { color: var(--fg-muted); margin: 0 0 12px; font-size: 0.625rem; }
 
 .rt__scroll {
-  overflow: auto; max-height: calc(100vh - var(--header-h) - 40px); position: relative;
+  overflow: auto; max-height: calc(var(--svh, 1vh) * 100 - var(--header-h) - 40px); position: relative;
   border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); overscroll-behavior-x: contain;
 }
 .rt__scroll--short { max-height: none; overflow-y: hidden; }
