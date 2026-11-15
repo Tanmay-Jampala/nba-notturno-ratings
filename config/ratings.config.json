@@ -1,0 +1,106 @@
+{
+  "$comment": "Every number that shapes a rating lives here. Edit, then run `npm run compute` (or wait for the next scheduled update). Weights inside a group are relative; group weights must add up to 1.",
+  "season": "2026-27",
+  "final": { "stats": 0.8, "skills": 0.2 },
+
+  "smallSample": { "minGP": 5, "minMPG": 10 },
+
+  "roster": { "size": 15, "starters": 5, "substitutes": 5 },
+
+  "positions": { "G": "Guard", "F": "Forward", "C": "Center", "default": "Forward" },
+
+  "stats": {
+    "groups": {
+      "efficiency": {
+        "label": "Efficiency",
+        "weight": 0.3,
+        "stats": { "TS_PCT": 2, "FG_PCT": 1, "FG3_PCT": 1, "FT_PCT": 0.5 }
+      },
+      "impact": {
+        "label": "Impact",
+        "weight": 0.3,
+        "stats": { "PIE": 1.5, "NET_RATING": 1, "PLUS_MINUS": 1 }
+      },
+      "totals": {
+        "label": "Raw totals",
+        "weight": 0.4,
+        "stats": { "PTS": 1, "REB": 1, "AST": 1, "STL": 0.75, "BLK": 0.75, "TOV": 0.75, "MIN": 0.5, "GP": 0.25, "GS": 0 }
+      }
+    },
+    "lowerIsBetter": ["TOV"]
+  },
+
+  "shrinkage": {
+    "$comment": "Low-volume numbers are pulled toward the league average: shrunk = (value*n + leagueAvg*prior) / (n + prior), where n is the volume basis (season totals). Removes the 1-for-1 = 100% problem.",
+    "FG_PCT": { "basis": "FGA_TOTAL", "prior": 60 },
+    "FG3_PCT": { "basis": "FG3A_TOTAL", "prior": 40 },
+    "FT_PCT": { "basis": "FTA_TOTAL", "prior": 25 },
+    "TS_PCT": { "basis": "TSA_TOTAL", "prior": 75 },
+    "PIE": { "basis": "MIN_TOTAL", "prior": 150 },
+    "NET_RATING": { "basis": "MIN_TOTAL", "prior": 250, "toward": 0 },
+    "PLUS_MINUS": { "basis": "MIN_TOTAL", "prior": 250, "toward": 0 }
+  },
+
+  "skills": {
+    "hustle": {
+      "label": "Hustle",
+      "definition": "Hustle: energetic, determined effort. Measured as how often a player creates extra possessions through effort plays that don't show up as steals or rebounds.",
+      "source": "stats.nba.com/stats/leaguehustlestatsplayer",
+      "weight": 1,
+      "parts": {
+        "DEFLECTIONS_36": { "label": "Deflections per 36", "weight": 1, "prior": 150 },
+        "LOOSE_BALLS_36": { "label": "Loose balls recovered per 36", "weight": 1, "prior": 150 },
+        "CHARGES_36": { "label": "Charges drawn per 36", "weight": 0.5, "prior": 150 }
+      }
+    },
+    "screening": {
+      "label": "Screening & off-ball",
+      "definition": "Screen: a legal block that frees a teammate. Off-ball work: what a player does for others without the ball. Measured by screens that lead directly to a teammate's basket and by box-outs.",
+      "source": "stats.nba.com/stats/leaguehustlestatsplayer",
+      "weight": 1,
+      "parts": {
+        "SCREEN_AST_36": { "label": "Screen assists per 36", "weight": 1, "prior": 150 },
+        "BOX_OUTS_36": { "label": "Box-outs per 36", "weight": 1, "prior": 150 }
+      }
+    },
+    "defense": {
+      "label": "Defensive impact",
+      "definition": "Defend: to make it harder for the opponent to score. Measured as how much worse opponents shoot when this player is the closest defender, compared with those same shooters' normal accuracy.",
+      "source": "stats.nba.com/stats/leaguedashptdefend (DefenseCategory=Overall)",
+      "weight": 1,
+      "parts": {
+        "DFG_DIFF": { "label": "Opponent FG% vs normal (lower is better)", "weight": 2, "prior": 120, "lowerIsBetter": true },
+        "CONTESTS_36": { "label": "Shots contested per 36", "weight": 1, "prior": 150 }
+      }
+    },
+    "creation": {
+      "label": "Shot creation",
+      "definition": "Create: to bring something about by one's own action. Measured as the share of made shots nobody assisted, and points generated from driving to the basket.",
+      "source": "stats.nba.com/stats/leaguedashplayerstats (MeasureType=Scoring) + leaguedashptstats (PtMeasureType=Drives)",
+      "weight": 1,
+      "parts": {
+        "UAST_SHARE": { "label": "Share of made FGs unassisted", "weight": 1, "prior": 40 },
+        "DRIVE_PTS_36": { "label": "Drive points per 36", "weight": 1, "prior": 150 }
+      }
+    },
+    "clutch": {
+      "label": "Clutch",
+      "definition": "Clutch: performing well under pressure. Measured in the last five minutes of games within five points: scoring efficiency and the team's net rating with the player on the floor.",
+      "source": "stats.nba.com/stats/leaguedashplayerclutch (Last 5 Minutes, PointDiff=5)",
+      "weight": 1,
+      "parts": {
+        "CLUTCH_TS": { "label": "Clutch true shooting %", "weight": 1, "prior": 12 },
+        "CLUTCH_NET": { "label": "Clutch net rating", "weight": 1, "prior": 25, "toward": 0 }
+      }
+    },
+    "onOff": {
+      "label": "On-court impact",
+      "definition": "Impact: a marked effect. Measured as the team's net rating with the player on the floor minus its net rating with the player off it.",
+      "source": "stats.nba.com/stats/teamplayeronoffsummary (MeasureType=Advanced)",
+      "weight": 1,
+      "parts": {
+        "ONOFF_NET": { "label": "On/off net rating swing", "weight": 1, "prior": 300, "toward": 0 }
+      }
+    }
+  }
+}

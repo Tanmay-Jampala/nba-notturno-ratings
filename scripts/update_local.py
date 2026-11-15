@@ -1,0 +1,42 @@
+"""Run the data update from your own machine (use this if NBA.com blocks GitHub's runners).
+
+    python scripts/update_local.py            # fetch → compute → test → commit → push
+    python scripts/update_local.py --no-push  # stop after committing
+
+Pushing data/ to main triggers deploy.yml, which rebuilds and redeploys the site.
+"""
+from __future__ import annotations
+
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+NPX = "npx.cmd" if sys.platform == "win32" else "npx"
+
+
+def run(cmd: list[str]) -> int:
+    print("$", " ".join(cmd), flush=True)
+    return subprocess.call(cmd, cwd=ROOT)
+
+
+def main() -> int:
+    if run([sys.executable, "scripts/fetch.py", "--source", "stats", "--label", "local"]) != 0:
+        print("Fetch failed; nothing changed.")
+        return 1
+    if run([NPX, "tsx", "scripts/compute.ts"]) != 0 or run([NPX, "vitest", "run"]) != 0:
+        print("Compute or tests failed; restoring the previous data.")
+        run(["git", "checkout", "--", "data", "public/data"])
+        return 1
+    run(["git", "add", "data/raw/bundle.json", "public/data"])
+    if subprocess.call(["git", "diff", "--cached", "--quiet"], cwd=ROOT) == 0:
+        print("No data changes.")
+        return 0
+    run(["git", "commit", "-m", "data: local update"])
+    if "--no-push" not in sys.argv:
+        return run(["git", "push"])
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
