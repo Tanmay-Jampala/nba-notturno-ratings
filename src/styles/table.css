@@ -1,5 +1,5 @@
 /* ---------- ranking table island */
-.ranking { position: relative; }
+.ranking { position: relative; min-height: 90vh; } /* reserve space so the table doesn't shift the page when it mounts */
 .rt__err, .rt__empty { color: var(--fg-muted); padding: 32px 0; text-align: center; }
 .rt__tabs { display: flex; justify-content: center; gap: 16px; margin: 0 0 40px; flex-wrap: wrap; }
 .rt__controls { display: flex; flex-wrap: wrap; gap: 16px 20px; align-items: end; margin-bottom: 18px; }

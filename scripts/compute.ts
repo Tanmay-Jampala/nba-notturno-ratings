@@ -49,7 +49,8 @@ const meta = {
 
 const out = resolve(ROOT, 'public/data');
 mkdirSync(out, { recursive: true });
-writeFileSync(resolve(out, 'players.json'), JSON.stringify(players));
+const trim = (_k: string, v: unknown) => (typeof v === 'number' && !Number.isInteger(v) ? Math.round(v * 1e4) / 1e4 : v);
+writeFileSync(resolve(out, 'players.json'), JSON.stringify(players, trim));
 writeFileSync(resolve(out, 'teams.json'), JSON.stringify(teamsOut));
 writeFileSync(resolve(out, 'meta.json'), JSON.stringify(meta, null, 1));
 console.log(`✓ ${players.length} players · ${teams.length} teams · source=${meta.source} · ${meta.lastUpdated}`);

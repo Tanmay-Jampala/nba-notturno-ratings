@@ -8,6 +8,6 @@ export default defineConfig({
   site: `https://${owner.toLowerCase()}.github.io`,
   base: `/${repo}/`,
   trailingSlash: 'always',
-  build: { format: 'directory' },
+  build: { format: 'directory', inlineStylesheets: 'always' },
   vite: { build: { assetsInlineLimit: 0 } },
 });

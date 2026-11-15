@@ -1,0 +1,77 @@
+name: Update data
+
+on:
+  schedule:
+    - cron: '0 */3 * * *'   # every 3 hours (UTC)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Fetch from NBA.com (stats → cdn fallback)
+        id: fetch
+        run: |
+          if python scripts/fetch.py; then
+            echo "fresh=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::NBA.com could not be reached from this runner. Keeping the previous data. Run scripts/update_local.py from your own machine if this keeps happening."
+            echo "fresh=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Compute ratings
+        run: npx tsx scripts/compute.ts --top 10
+
+      - name: Test
+        run: npx vitest run
+
+      - name: Commit data
+        if: steps.fetch.outputs.fresh == 'true'
+        run: |
+          git config user.name "notturno-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/raw/bundle.json public/data
+          if git diff --cached --quiet; then
+            echo "No data changes."
+          else
+            git commit -m "data: scheduled update $(date -u +%Y-%m-%dT%H:%MZ)"
+            git push
+          fi
+
+      - name: Build
+        env:
+          REPO_NAME: ${{ github.event.repository.name }}
+          REPO_OWNER: ${{ github.repository_owner }}
+        run: npm run build
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - id: deploy
+        uses: actions/deploy-pages@v4

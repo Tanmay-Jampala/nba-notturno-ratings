@@ -1,14 +1,119 @@
 ---
 import Base from '../layouts/Base.astro';
+import Emblem from '../components/Emblem.astro';
+import XText from '../components/XText.astro';
 import DividerRow from '../components/DividerRow.astro';
 import RankingTable from '../components/RankingTable.astro';
-import { META } from '../lib/site';
+import { META, url } from '../lib/site';
+import '../styles/home.css';
+const cfg = META.config;
 ---
-<Base title="Notturno">
-  <section class="page" id="league" aria-labelledby="league-title">
+<Base title="Notturno" bodyClass="home">
+  <!-- loader -->
+  <div class="loader" data-loader aria-hidden="true">
+    <span class="loader__word">Notturno</span>
+    <Emblem size={150} draw class="loader__emblem" />
+    <span class="loader__line"><span data-progress></span></span>
+  </div>
+
+  <!-- gate -->
+  <div class="gate" data-gate role="dialog" aria-modal="true" aria-labelledby="gate-q" hidden>
+    <p class="gate__line gate__line--top heading1" aria-hidden="true">Ready for</p>
+    <div class="gate__mid">
+      <h2 id="gate-q" class="sr-only">Ready for tip-off? Choose whether to play sound.</h2>
+      <button class="obtn" type="button" data-gate-choice="sound">With sound</button>
+      <svg class="gate__orn" viewBox="0 0 24 80" width="20" height="68" aria-hidden="true"><path d="M12 2c-6 6 6 10 0 16s6 10 0 16 6 10 0 16 6 10 0 16 6 6 0 12" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="12" cy="40" r="3.2" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+      <button class="obtn" type="button" data-gate-choice="silent">Silent</button>
+    </div>
+    <p class="gate__line gate__line--bot heading1" aria-hidden="true">tip-off?</p>
+  </div>
+
+  <button class="sound" type="button" data-sound aria-pressed="false">
+    <span class="sound__bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+    <span class="sr-only">Sound off</span>
+  </button>
+
+  <div class="rotate" aria-hidden="true"><Emblem size={64} /><p class="body-bold">Turn your phone upright for the full story</p></div>
+
+  <!-- scroll story -->
+  <section id="story" class="story" aria-label="Introduction">
+    <div class="story__stage">
+      <canvas class="story__canvas" data-canvas aria-hidden="true"></canvas>
+      <div class="frame" data-beat="0.085,0.76" aria-hidden="true"><span></span></div>
+
+      <div class="beat beat--title" data-beat="0,0.07">
+        <h1 class="title">
+          <span class="title__small heading3">The</span>
+          <span class="title__big heading1">Notturno</span>
+          <span class="title__big title__big--2 heading1">Ratings</span>
+        </h1>
+        <p class="title__hint body-bold">2026-27 regular season · scroll</p>
+      </div>
+
+      <div class="beat beat--walk" data-beat="0.1,0.29">
+        <h2 class="heading2 beat__h panel-h">Four hundred fifty<br />names on the floor</h2>
+        <p class="caption body-bold" data-type>The arena is empty. He walks the lines anyway, the way every player on every roster does.</p>
+      </div>
+
+      <div class="beat beat--ball" data-beat="0.36,0.53">
+        <h2 class="heading2 beat__h panel-h">Eighty parts numbers<br />twenty parts craft</h2>
+        <p class="beat__p body-regular">Statistics make up {Math.round(cfg.final.stats * 100)}% of a rating, with efficiency and impact counting for more than raw totals. Skills make up the other {Math.round(cfg.final.skills * 100)}%: six things NBA.com tracks that a box score never shows.</p>
+      </div>
+
+      <div class="beat beat--three" data-beat="0.585,0.635"><p class="three heading1 panel-h">Starters.</p><p class="caption body-bold" data-type>Five open the night: the most games started.</p></div>
+      <div class="beat beat--three" data-beat="0.64,0.69"><p class="three heading1 panel-h">Substitutes.</p><p class="caption body-bold" data-type>Five keep it moving: the next most minutes.</p></div>
+      <div class="beat beat--three" data-beat="0.695,0.75"><p class="three heading1 panel-h">Reserves.</p><p class="caption body-bold" data-type>Five wait for their name. Every one of them is rated.</p></div>
+
+      <div class="beat beat--nave" data-beat="0.84,1.01">
+        <h2 class="heading1 beat__h">The league,<br />ranked</h2>
+      </div>
+    </div>
+  </section>
+
+  <!-- manifesto -->
+  <section class="manifesto" aria-labelledby="mani-h">
+    <XText as="h2" size={2} id="mani-h" lines={['Rated for the faithful,', 'ranked for the doubters']} />
+    <ul class="mani__three body-bold">
+      <li><span>Percentiles,</span><span>not opinions</span></li>
+      <li><span>One scale for</span><span>every position</span></li>
+      <li><span>Refreshed every</span><span>three hours</span></li>
+    </ul>
+    <p class="mani__p body-regular">Every player on every roster, measured the same way. Most of the rating comes from what the box score records. The rest comes from what it misses: deflections, screens, contests, drives, late-game shooting, and what happens to the score when a player sits down.</p>
+    <p class="mani__side mani__side--l body-bold" aria-hidden="true">Notturno</p>
+    <p class="mani__side mani__side--r body-bold" aria-hidden="true">2026-27</p>
+  </section>
+
+  <!-- top ten carousel -->
+  <section class="select" aria-labelledby="sel-h">
+    <DividerRow id="sel-h" left={['By rating', 'out of 100']} lines={["Tonight's", 'top ten']} right={['Updated', 'every three hours']} />
+    <div class="car" data-carousel role="region" aria-roledescription="carousel" aria-label="Top ten players" tabindex="0">
+      <button class="car__btn car__btn--prev obtn" type="button" data-prev>Previous</button>
+      <div class="car__track" data-track></div>
+      <button class="car__btn car__btn--next obtn" type="button" data-next>Next</button>
+      <p class="sr-only" aria-live="polite" data-status></p>
+    </div>
+  </section>
+
+  <!-- collection -->
+  <section class="collection" aria-labelledby="col-h">
+    <XText as="h2" size={2} id="col-h" lines={['The rest of the story', 'is in the numbers']} />
+    <nav class="collection__links" aria-label="Rankings">
+      <a class="obtn" href="#league">League</a>
+      <a class="obtn" href={url('conferences/')}>Conferences</a>
+      <a class="obtn" href={url('teams/')}>Teams</a>
+      <a class="obtn" href={url('positions/')}>Positions</a>
+    </nav>
+  </section>
+
+  <!-- the league -->
+  <section class="page league" id="league" aria-labelledby="league-title">
     <div class="page-head">
       <DividerRow id="league-title" left={['80% statistics', '20% skills']} lines={['The whole', 'league, ranked']} right={[`${META.counts.players} players`, '30 teams']} />
     </div>
     <RankingTable view="league" caption="League rankings" />
   </section>
+
+  <script>
+    import '../scripts/home/story';
+  </script>
 </Base>
