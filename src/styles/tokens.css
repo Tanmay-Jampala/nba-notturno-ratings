@@ -1,0 +1,46 @@
+/* Notturno design tokens — values taken from the reference capture (see reference/santioni/NOTES.md). */
+:root {
+  /* colour */
+  --bg: #1d1d1d;            /* night */
+  --bg-deep: #121212;       /* ink / footer / button text */
+  --fg: #ffffff;
+  --paper: #f2f1ee;         /* engraved-story surface */
+  --ink: #121212;
+  --accent: #c82924;        /* the one red: active sort, rank 1, small-sample outline, focus, ≥90th pct */
+  --fg-muted: rgba(255, 255, 255, 0.62);   /* 6.9:1 on --bg */
+  --fg-faint: rgba(255, 255, 255, 0.5);    /* nav idle, 5.3:1 on --bg */
+  --rule: rgba(255, 255, 255, 0.16);
+  --track: #121212;
+  --team: var(--fg);        /* overridden on team pages */
+
+  /* type */
+  --font-display: 'Limelight', 'Federo', Georgia, serif;
+  --font-label: 'M PLUS Rounded 1c', 'Arial Rounded MT Bold', system-ui, sans-serif;
+  --font-body: 'Manrope', system-ui, sans-serif;
+  --font-script: 'Allura', cursive;
+
+  --h1: clamp(3rem, 1.2rem + 8.4vw, 9.5rem);
+  --h2: clamp(2.25rem, 1.1rem + 4.6vw, 5.75rem);
+  --h3: clamp(1.5rem, 1.05rem + 1.6vw, 2.5rem);
+  --label: 0.75rem;   /* 12px nav/labels */
+  --small: 0.8125rem;
+  --body: 0.9375rem;  /* 15px */
+
+  --tracking-display: 0.005em;
+  --tracking-label: 0.02em;
+
+  /* motion */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --t-nav: 0.4s;
+  --t-line: 0.3s;
+
+  /* layout */
+  --gutter: clamp(16px, 3vw, 40px);
+  --header-h: 88px;
+  --max: 1440px;
+}
+
+@media (max-width: 767px) {
+  :root { --header-h: 72px; }
+}

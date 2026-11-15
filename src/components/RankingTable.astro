@@ -1,0 +1,18 @@
+---
+import '../styles/table.css';
+interface Props { view: 'league' | 'conference' | 'team' | 'position'; fixed?: Record<string, string>; tabs?: 'conference' | 'position'; caption: string; id?: string }
+const { view, fixed = {}, tabs, caption, id } = Astro.props;
+---
+<div class="ranking" id={id} data-ranking data-view={view} data-fixed={JSON.stringify(fixed)} data-tabs={tabs} data-caption={caption}>
+  <p class="rt__loading body-bold">Loading ratings…</p>
+  <noscript><p class="rt__err">The ranking tables need JavaScript to sort and filter. The raw data is at <a class="ulink" href="../data/players.json">players.json</a>.</p></noscript>
+</div>
+
+<style>
+  .rt__loading { color: var(--fg-muted); padding: 48px 0; text-align: center; }
+</style>
+
+<script>
+  import { mountAll } from '../scripts/table';
+  mountAll();
+</script>

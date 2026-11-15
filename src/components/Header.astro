@@ -1,0 +1,93 @@
+---
+import Emblem from './Emblem.astro';
+import { NAV, url, BASE, META } from '../lib/site';
+const path = Astro.url.pathname.replace(BASE, '').replace(/^\//, '');
+---
+<header class="hdr" data-hdr>
+  <a class="hdr__brand" href={url()} aria-label="Notturno — home">
+    <Emblem size={44} />
+    <span class="hdr__word" aria-hidden="true">Notturno</span>
+  </a>
+
+  <div class="hdr__right">
+    <p class="hdr__updated body-bold">
+      Last updated <time data-updated datetime={META.lastUpdated}>{META.lastUpdated?.slice(0, 16).replace('T', ' ')} UTC</time>
+    </p>
+    <nav class="hdr__box" aria-label="Main">
+      <ul class="hdr__nav">
+        {NAV.map((n, i) => (
+          <>
+            {i > 0 && <li class="hdr__sep" aria-hidden="true"><svg viewBox="0 0 24 8" width="18" height="6"><path d="M1 4c3-3 5 3 8 0s5-3 7 0 5 3 7 0" stroke="currentColor" fill="none" stroke-width="1.2"/></svg></li>}
+            <li><a class:list={['hdr__link body-bold', { 'is-active': n.match(path) }]} href={url(n.href)} aria-current={n.match(path) ? 'page' : undefined}>{n.label}</a></li>
+          </>
+        ))}
+      </ul>
+      <button class="hdr__menu body-bold" type="button" aria-expanded="false" aria-controls="mobile-nav" data-menu>Menu</button>
+    </nav>
+  </div>
+</header>
+
+<div class="mnav" id="mobile-nav" hidden data-mnav>
+  <ul>
+    {NAV.map(n => <li><a class="heading3" href={url(n.href)} aria-current={n.match(path) ? 'page' : undefined}>{n.label}</a></li>)}
+  </ul>
+</div>
+
+<style>
+  .hdr {
+    position: fixed; inset: 0 0 auto 0; z-index: 40; height: var(--header-h); padding: 0 var(--gutter);
+    display: flex; align-items: center; justify-content: space-between; pointer-events: none;
+  }
+  .hdr > * { pointer-events: auto; }
+  .hdr::before { /* own background layer so tables don't run under the nav illegibly */
+    content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+    background: linear-gradient(var(--bg) 0%, color-mix(in srgb, var(--bg) 85%, transparent) 60%, transparent);
+    opacity: var(--hdr-bg, 1); transition: opacity 0.4s var(--ease-out);
+  }
+  .hdr__brand { display: flex; align-items: center; gap: 10px; color: var(--fg); }
+  .hdr__word { font: 400 2.1rem/1 var(--font-script); margin-top: 4px; }
+  .hdr__right { display: flex; align-items: center; gap: 20px; }
+  .hdr__updated { margin: 0; color: var(--fg-muted); font-size: 0.625rem; text-align: right; max-width: 15ch; }
+  .hdr__box {
+    position: relative; background: var(--paper); color: var(--ink); padding: 12px 22px; isolation: isolate;
+  }
+  .hdr__box::before { content: ''; position: absolute; inset: 0; border: 3px solid var(--ink); filter: url(#wobble); pointer-events: none; }
+  .hdr__nav { list-style: none; display: flex; align-items: center; gap: 14px; margin: 0; padding: 0; }
+  .hdr__sep { color: var(--accent); display: grid; }
+  .hdr__link { display: block; padding: 4px 0; color: var(--ink); opacity: 0.5; transition: opacity var(--t-nav) ease-out; }
+  .hdr__link:hover, .hdr__link:focus-visible, .hdr__link.is-active { opacity: 1; }
+  .hdr__link:focus-visible { outline-offset: 4px; }
+  .hdr__menu { display: none; color: var(--ink); min-height: 32px; }
+
+  .mnav {
+    position: fixed; inset: 0; z-index: 39; background: var(--bg-deep); padding: calc(var(--header-h) + 24px) var(--gutter) 40px;
+  }
+  .mnav ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; }
+  .mnav a { display: block; padding: 6px 0; opacity: 0.6; }
+  .mnav a[aria-current='page'] { opacity: 1; }
+
+  @media (max-width: 1023px) {
+    .hdr__nav { display: none; }
+    .hdr__menu { display: block; }
+    .hdr__box { padding: 8px 16px; }
+  }
+  @media (max-width: 767px) {
+    .hdr__updated { display: none; }
+    .hdr__word { font-size: 1.7rem; }
+    .hdr__brand :global(svg) { width: 36px; height: 36px; }
+  }
+</style>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('[data-menu]');
+  const panel = document.querySelector<HTMLElement>('[data-mnav]');
+  btn?.addEventListener('click', () => {
+    const open = btn.getAttribute('aria-expanded') !== 'true';
+    btn.setAttribute('aria-expanded', String(open));
+    btn.textContent = open ? 'Close' : 'Menu';
+    if (panel) panel.hidden = !open;
+    document.documentElement.style.overflow = open ? 'hidden' : '';
+    if (open) panel?.querySelector('a')?.focus();
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && btn?.getAttribute('aria-expanded') === 'true') { btn.click(); btn.focus(); } });
+</script>

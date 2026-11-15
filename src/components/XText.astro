@@ -1,0 +1,24 @@
+---
+/** Two-line split heading. Words rise in on view (60ms stagger); a plain sr-only copy is read instead. */
+interface Props {
+  lines: string[];
+  as?: 'h1' | 'h2' | 'h3' | 'p' | 'div';
+  size?: 1 | 2 | 3;
+  ghost?: string;
+  class?: string;
+  id?: string;
+  immediate?: boolean;
+}
+const { lines, as: Tag = 'h2', size = 2, ghost, class: cls = '', id, immediate = false } = Astro.props;
+let i = 0;
+const split = lines.map(line => line.split(/\s+/).filter(Boolean).map(w => ({ w, i: i++ })));
+---
+<Tag class:list={['xtext', `heading${size}`, cls, { 'is-in': immediate }]} id={id} data-xtext>
+  <span aria-hidden="true">
+    {split.map(words => (
+      <span class="xtext__line">{words.map(({ w, i }, k) => <><span class="word" style={`--i:${i}`}>{w}</span>{k < words.length - 1 ? ' ' : ''}</>)}</span>
+    ))}
+  </span>
+  <span class="sr-only">{lines.join(' ')}</span>
+  {ghost && <span class="xtext__ghost" aria-hidden="true">{ghost}</span>}
+</Tag>

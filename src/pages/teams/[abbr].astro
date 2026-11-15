@@ -1,0 +1,44 @@
+---
+import Base from '../../layouts/Base.astro';
+import XText from '../../components/XText.astro';
+import RankingTable from '../../components/RankingTable.astro';
+import { TEAMS, url } from '../../lib/site';
+
+export function getStaticPaths() {
+  return TEAMS.map(t => ({ params: { abbr: t.abbr.toLowerCase() }, props: { team: t } }));
+}
+const { team } = Astro.props as { team: (typeof TEAMS)[number] };
+const confRank = TEAMS.filter(t => t.conference === team.conference).sort((a, b) => b.avgRating - a.avgRating).findIndex(t => t.id === team.id) + 1;
+const leagueRank = [...TEAMS].sort((a, b) => b.avgRating - a.avgRating).findIndex(t => t.id === team.id) + 1;
+const words = team.name.split(' ');
+const lines = team.city.length + team.name.length > 22 && words.length > 1 ? [team.city + ' ' + words[0], words.slice(1).join(' ')] : [team.city, team.name];
+---
+<Base title={`${team.city} ${team.name}`} teamColor={team.color} ogImage={`og/${team.abbr.toLowerCase()}.png`}
+  description={`${team.city} ${team.name} 2026-27: all 15 players rated out of 100 and ranked as starters, substitutes and reserves.`}>
+  <div class="page">
+    <a class="ulink body-bold back" href={url('teams/')}>All teams</a>
+    <div class="page-head thead">
+      <XText as="h1" size={1} lines={lines} ghost={team.abbr} />
+      <span class="thead__rule" aria-hidden="true"></span>
+      <dl class="thead__facts body-bold">
+        <div><dt>Average rating</dt><dd class="tabular">{team.avgRating.toFixed(1)}</dd></div>
+        <div><dt>{team.conference}ern Conference</dt><dd class="tabular">#{confRank} of 15</dd></div>
+        <div><dt>League</dt><dd class="tabular">#{leagueRank} of 30</dd></div>
+        <div><dt>Top player</dt><dd>{team.top.name}</dd></div>
+      </dl>
+      {team.twoWayFill.length > 0 && <p class="lede body-regular">This team carries 14 standard contracts, so its most-used two-way player fills the 15th spot.</p>}
+    </div>
+    <RankingTable view="team" fixed={{ team: team.abbr }} caption={`${team.city} ${team.name} roster rankings`} />
+  </div>
+</Base>
+
+<style>
+  .back { margin-bottom: 12px; color: var(--fg-muted); }
+  .thead { padding-top: 32px; }
+  .thead :global(.xtext__ghost) { font-size: 2.6em; opacity: 0.07; }
+  .thead__rule { display: block; width: min(320px, 60%); height: 1px; background: var(--team); margin: 28px auto 24px; }
+  .thead__facts { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px 40px; margin: 0; }
+  .thead__facts div { display: grid; gap: 6px; }
+  .thead__facts dt { color: var(--fg-muted); font-size: 0.625rem; }
+  .thead__facts dd { margin: 0; font: 400 1.5rem/1 var(--font-display); text-transform: uppercase; }
+</style>

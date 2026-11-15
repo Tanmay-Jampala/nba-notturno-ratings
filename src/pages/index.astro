@@ -1,0 +1,14 @@
+---
+import Base from '../layouts/Base.astro';
+import DividerRow from '../components/DividerRow.astro';
+import RankingTable from '../components/RankingTable.astro';
+import { META } from '../lib/site';
+---
+<Base title="Notturno">
+  <section class="page" id="league" aria-labelledby="league-title">
+    <div class="page-head">
+      <DividerRow id="league-title" left={['80% statistics', '20% skills']} lines={['The whole', 'league, ranked']} right={[`${META.counts.players} players`, '30 teams']} />
+    </div>
+    <RankingTable view="league" caption="League rankings" />
+  </section>
+</Base>

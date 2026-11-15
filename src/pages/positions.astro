@@ -1,0 +1,14 @@
+---
+import Base from '../layouts/Base.astro';
+import DividerRow from '../components/DividerRow.astro';
+import RankingTable from '../components/RankingTable.astro';
+---
+<Base title="Positions" description="NBA guards, forwards and centers ranked by their 2026-27 rating out of 100.">
+  <div class="page">
+    <div class="page-head">
+      <DividerRow as="h1" size={1} left={['Guard', 'Forward', 'Center']} lines={['Every position,', 'same yardstick']} right={['As listed', 'by NBA.com']} />
+      <p class="lede body-regular">Players are grouped by the first position NBA.com lists for them, so a G-F counts as a guard. Ratings aren't adjusted by position: centers and guards are measured against the whole league.</p>
+    </div>
+    <RankingTable view="position" tabs="position" caption="Position rankings" />
+  </div>
+</Base>

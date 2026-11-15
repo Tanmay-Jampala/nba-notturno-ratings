@@ -1,0 +1,35 @@
+---
+/** Original emblem: a basketball whose seams form the tracery of a rose window. Thin strokes, currentColor. */
+interface Props { size?: number; class?: string; draw?: boolean; title?: string }
+const { size = 96, class: cls = '', draw = false, title } = Astro.props;
+const spokes = Array.from({ length: 24 }, (_, i) => {
+  const a = (i / 24) * Math.PI * 2;
+  const r1 = 17, r2 = 42.5;
+  return `M${(50 + Math.cos(a) * r1).toFixed(2)} ${(50 + Math.sin(a) * r1).toFixed(2)}L${(50 + Math.cos(a) * r2).toFixed(2)} ${(50 + Math.sin(a) * r2).toFixed(2)}`;
+}).join('');
+const petals = Array.from({ length: 8 }, (_, i) => {
+  const a = (i / 8) * Math.PI * 2;
+  return { cx: (50 + Math.cos(a) * 12.5).toFixed(2), cy: (50 + Math.sin(a) * 12.5).toFixed(2) };
+});
+---
+<svg class:list={['emblem', cls, { 'emblem--draw': draw }]} width={size} height={size} viewBox="0 0 100 100"
+  fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" role={title ? 'img' : undefined}
+  aria-hidden={title ? undefined : 'true'} aria-label={title}>
+  <circle pathLength="1" cx="50" cy="50" r="48" />
+  <circle pathLength="1" cx="50" cy="50" r="43" />
+  <path pathLength="1" d={spokes} stroke-width="0.6" />
+  <path pathLength="1" d="M50 2V98M2 50H98" />
+  <path pathLength="1" d="M20 12C40 32 40 68 20 88M80 12C60 32 60 68 80 88" />
+  <circle pathLength="1" cx="50" cy="50" r="17" fill="var(--emblem-fill, #1d1d1d)" />
+  {petals.map(p => <circle pathLength="1" cx={p.cx} cy={p.cy} r="4.2" stroke-width="0.8" />)}
+  <circle pathLength="1" cx="50" cy="50" r="7.5" />
+  <circle pathLength="1" cx="50" cy="50" r="2.2" />
+</svg>
+
+<style>
+  .emblem--draw :global(*) { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 2.4s var(--ease-out) forwards; }
+  .emblem--draw :global(path) { animation-delay: 0.35s; }
+  .emblem--draw :global(circle:nth-of-type(n + 4)) { animation-delay: 0.7s; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  @media (prefers-reduced-motion: reduce) { .emblem--draw :global(*) { animation: none; stroke-dashoffset: 0; } }
+</style>

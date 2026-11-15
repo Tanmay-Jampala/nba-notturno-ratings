@@ -1,0 +1,16 @@
+---
+import Base from '../layouts/Base.astro';
+import DividerRow from '../components/DividerRow.astro';
+import RankingTable from '../components/RankingTable.astro';
+import { META } from '../lib/site';
+const perSide = META.counts.players / 2;
+---
+<Base title="Conferences" description="All 225 Eastern and 225 Western Conference players ranked by their 2026-27 rating out of 100.">
+  <div class="page">
+    <div class="page-head">
+      <DividerRow as="h1" size={1} left={['East', 'and West']} lines={['Two sides,', 'one scale']} right={[`${perSide} players`, 'each side']} />
+      <p class="lede body-regular">Each conference is ranked on its own. Percentiles are still league-wide, so an 80 in the East means the same as an 80 in the West.</p>
+    </div>
+    <RankingTable view="conference" tabs="conference" caption="Conference rankings" />
+  </div>
+</Base>

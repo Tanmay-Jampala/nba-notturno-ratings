@@ -1,0 +1,50 @@
+---
+import Base from '../../layouts/Base.astro';
+import DividerRow from '../../components/DividerRow.astro';
+import { TEAMS, url } from '../../lib/site';
+const side = (c: 'East' | 'West') => TEAMS.filter(t => t.conference === c).sort((a, b) => b.avgRating - a.avgRating);
+---
+<Base title="Teams" description="All 30 NBA teams with their average player rating and top-rated player for 2026-27.">
+  <div class="page">
+    <div class="page-head">
+      <DividerRow as="h1" size={1} left={['30 teams', '15 players each']} lines={['Thirty rosters,', 'fifteen deep']} right={['Ordered by', 'average rating']} />
+    </div>
+    <div class="tix">
+      {(['East', 'West'] as const).map(c => (
+        <section class="tix__col" aria-labelledby={`tix-${c}`}>
+          <h2 class="heading2 tix__h" id={`tix-${c}`}>{c}</h2>
+          <ol class="tix__list">
+            {side(c).map((t, i) => (
+              <li style={`--team:${t.color}`}>
+                <a class="tix__row" href={url(`teams/${t.abbr.toLowerCase()}/`)}>
+                  <span class="tix__n tabular" aria-hidden="true">{i + 1}</span>
+                  <span class="tix__name"><span class="tix__team">{t.city} {t.name}</span>
+                    <span class="tix__top">Top player: {t.top.name} · {t.top.rating.toFixed(1)}</span></span>
+                  <span class="tix__avg tabular"><span class="sr-only">Average rating </span>{t.avgRating.toFixed(1)}</span>
+                </a>
+              </li>
+            ))}
+          </ol>
+        </section>
+      ))}
+    </div>
+  </div>
+</Base>
+
+<style>
+  .tix { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; }
+  .tix__h { text-align: center; margin-bottom: 20px; }
+  .tix__list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+  .tix__row {
+    display: grid; grid-template-columns: 32px 1fr auto; align-items: center; gap: 16px; min-height: 64px; padding: 10px 4px;
+    border-bottom: 1px solid var(--rule); position: relative;
+  }
+  .tix__row::before { content: ''; position: absolute; left: 0; top: 10px; bottom: 10px; width: 1px; background: var(--team); opacity: 0; transition: opacity 0.3s; }
+  .tix__row:hover::before, .tix__row:focus-visible::before { opacity: 1; }
+  .tix__row:hover { background: #222; }
+  .tix__n { color: var(--fg-faint); padding-left: 10px; }
+  .tix__team { display: block; font: 600 1rem/1.3 var(--font-body); }
+  .tix__top { display: block; color: var(--fg-muted); font-size: var(--small); }
+  .tix__avg { font: 400 1.6rem/1 var(--font-display); }
+  @media (max-width: 900px) { .tix { grid-template-columns: 1fr; gap: 48px; } }
+</style>

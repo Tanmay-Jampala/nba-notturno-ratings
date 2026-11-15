@@ -1,0 +1,35 @@
+---
+import Emblem from './Emblem.astro';
+import { url, REPO_URL, META } from '../lib/site';
+---
+<footer class="ftr">
+  <div class="ftr__brand">
+    <Emblem size={76} />
+    <span class="ftr__word">Notturno</span>
+  </div>
+  <ul class="ftr__links body-bold">
+    <li><a class="ulink" href={REPO_URL} rel="noopener">GitHub</a></li>
+    <li><a class="ulink" href="https://www.nba.com/stats" rel="noopener">Data: NBA.com</a></li>
+    <li><a class="ulink" href={url('methodology/')}>Methodology</a></li>
+  </ul>
+  <p class="ftr__meta body-bold">
+    Last updated <time data-updated datetime={META.lastUpdated}>{META.lastUpdated?.slice(0, 16).replace('T', ' ')} UTC</time>
+    <span data-source>{META.source === 'stats' ? '' : ` · source: ${META.source}`}</span>
+  </p>
+  <p class="ftr__fine">2026-27 regular season. An independent fan project, not affiliated with the NBA.</p>
+</footer>
+
+<style>
+  .ftr {
+    background: var(--bg-deep); padding: 56px var(--gutter) 40px; display: grid;
+    grid-template-columns: 1fr auto; grid-template-areas: 'brand links' 'brand meta' 'fine fine'; gap: 28px 40px;
+  }
+  .ftr__brand { grid-area: brand; display: flex; align-items: center; gap: 14px; }
+  .ftr__word { font: 400 3rem/1 var(--font-script); }
+  .ftr__links { grid-area: links; list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; justify-items: start; }
+  .ftr__meta { grid-area: meta; margin: 0; color: var(--fg-muted); align-self: end; }
+  .ftr__fine { grid-area: fine; margin: 0; color: var(--fg-faint); font-size: var(--small); }
+  @media (max-width: 767px) {
+    .ftr { grid-template-columns: 1fr; grid-template-areas: 'brand' 'links' 'meta' 'fine'; }
+  }
+</style>

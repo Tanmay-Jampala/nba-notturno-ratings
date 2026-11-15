@@ -1,0 +1,156 @@
+---
+import Base from '../layouts/Base.astro';
+import DividerRow from '../components/DividerRow.astro';
+import XText from '../components/XText.astro';
+import { META, REPO_URL } from '../lib/site';
+import { COLUMNS } from '../lib/columns';
+
+const cfg = META.config;
+const pct = (x: number) => `${Math.round(x * 1000) / 10}%`;
+const statTitle = (k: string) => {
+  const map: Record<string, string> = { PTS: 'PTS', REB: 'REB', AST: 'AST', STL: 'STL', BLK: 'BLK', TOV: 'TOV', MIN: 'MIN', GP: 'GP', GS: 'GS', FG_PCT: 'FG%', FG3_PCT: '3P%', FT_PCT: 'FT%', TS_PCT: 'TS%', PLUS_MINUS: '+/-', NET_RATING: 'NET', PIE: 'PIE' };
+  const col = COLUMNS.find(c => c.label === map[k]);
+  return col ? col.title : k;
+};
+const groups = Object.entries(cfg.stats.groups).map(([gk, g]: any) => {
+  const total = Object.values(g.stats).reduce((s: number, w: any) => s + w, 0) as number;
+  return { gk, ...g, rows: Object.entries(g.stats).map(([k, w]: any) => ({ k, w, share: total ? (w / total) * g.weight : 0 })) };
+});
+const shrinkRows = Object.entries(cfg.shrinkage).filter(([k]) => !k.startsWith('$')) as Array<[string, any]>;
+const basisLabel: Record<string, string> = { FGA_TOTAL: 'field-goal attempts', FG3A_TOTAL: 'three-point attempts', FTA_TOTAL: 'free-throw attempts', TSA_TOTAL: 'true-shooting attempts', MIN_TOTAL: 'minutes' };
+const sourceLabel: Record<string, string> = { stats: 'stats.nba.com (full data)', cdn: 'cdn.nba.com box scores (skills carried over)', local: 'stats.nba.com, run from a local machine' };
+---
+<Base title="Methodology" description="How Notturno rates NBA players: league-wide percentiles, an 80/20 split between statistics and skills, and the exact NBA.com endpoints and formulas.">
+  <div class="page meth">
+    <div class="page-head">
+      <DividerRow as="h1" size={1} left={['How the', 'rating works']} lines={['Show your', 'working']} right={['Every weight', 'from the config']} />
+    </div>
+
+    <article class="meth__body">
+      <section aria-labelledby="m-formula">
+        <h2 class="heading3" id="m-formula">The formula</h2>
+        <p>Every rostered player gets a rating out of 100. Statistics make up {pct(cfg.final.stats)} and skills make up {pct(cfg.final.skills)}.</p>
+        <pre class="formula"><code>Rating = {cfg.final.stats} × Statistics score + {cfg.final.skills} × Skills score</code></pre>
+        <p>Both scores are built from percentiles: where a player's number sits among all {META.counts.players} rated players, from 0 (lowest in the league) to 100 (highest). Every position is measured on the same scale, so a center's assists are compared with everyone's assists.</p>
+        <pre class="formula"><code>percentile = (rank − 1) ÷ (players with data − 1) × 100</code></pre>
+        <p>Tied values share the average of their ranks. For turnovers the order is reversed, so fewer turnovers earn a higher percentile. A player with no data for a number at all scores 0 for it.</p>
+      </section>
+
+      <section aria-labelledby="m-stats">
+        <h2 class="heading3" id="m-stats">Statistics ({pct(cfg.final.stats)})</h2>
+        <p>Statistics are split into three groups. Efficiency and impact together count for {pct(cfg.stats.groups.efficiency.weight + cfg.stats.groups.impact.weight)} of the statistics score, more than raw totals at {pct(cfg.stats.groups.totals.weight)}. Inside each group, a stat's share comes from its relative weight.</p>
+        <div class="tscroll" tabindex="0" role="region" aria-label="Statistics weights">
+          <table class="mtable">
+            <thead><tr><th scope="col">Group</th><th scope="col">Statistic</th><th scope="col" class="num">Relative weight</th><th scope="col" class="num">Share of statistics score</th></tr></thead>
+            {groups.map(g => (
+              <tbody>
+                {g.rows.map((r: any, i: number) => (
+                  <tr>
+                    {i === 0 && <th scope="rowgroup" rowspan={g.rows.length}>{g.label}<span class="mtable__sub">{pct(g.weight)} of statistics</span></th>}
+                    <td>{statTitle(r.k)}{cfg.stats.lowerIsBetter.includes(r.k) && ' (fewer is better)'}</td>
+                    <td class="num tabular">{r.w}</td>
+                    <td class="num tabular">{r.w === 0 ? 'shown, not rated' : pct(r.share)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            ))}
+          </table>
+        </div>
+      </section>
+
+      <section aria-labelledby="m-shrink">
+        <h2 class="heading3" id="m-shrink">Small numbers don't win</h2>
+        <p>A player who goes 1-for-1 from three would otherwise top the league in three-point percentage. To stop that, rates are pulled toward the league average in proportion to how little volume is behind them, before percentiles are taken:</p>
+        <pre class="formula"><code>adjusted = (value × volume + league average × prior) ÷ (volume + prior)</code></pre>
+        <p>With little volume, the league average dominates. With a lot of volume, the player's own number does. The table shows the prior for each statistic. The raw value is still what the tables display.</p>
+        <div class="tscroll" tabindex="0" role="region" aria-label="Shrinkage priors">
+          <table class="mtable">
+            <thead><tr><th scope="col">Statistic</th><th scope="col">Volume measured in</th><th scope="col" class="num">Prior</th><th scope="col">Pulled toward</th></tr></thead>
+            <tbody>
+              {shrinkRows.map(([k, s]) => (
+                <tr><td>{statTitle(k)}</td><td>season {basisLabel[s.basis] ?? s.basis}</td><td class="num tabular">{s.prior}</td><td>{s.toward !== undefined ? s.toward : 'league average'}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section aria-labelledby="m-skills">
+        <h2 class="heading3" id="m-skills">Skills ({pct(cfg.final.skills)})</h2>
+        <p>Skills are things that change games but don't appear in a box score. Each one starts from the plain meaning of the word and is measured with NBA.com's tracking, hustle, defense and clutch data. Every part is converted to a per-36-minute rate or a percentage, adjusted for small samples the same way as the statistics, and turned into a league-wide percentile. A skill's score is the weighted average of its parts, and the skills score is the average of the six skills.</p>
+        <div class="skills">
+          {Object.entries(cfg.skills).map(([sk, s]: any) => (
+            <section class="skill">
+              <XText as="h3" size={3} lines={[s.label]} />
+              <p>{s.definition}</p>
+              <p class="skill__src body-bold">Source: <code>{s.source}</code></p>
+              <ul class="skill__parts">
+                {Object.entries(s.parts).map(([pk, p]: any) => (
+                  <li><span>{p.label}</span><span class="tabular">weight {p.weight} · prior {p.prior}{p.toward !== undefined ? `, toward ${p.toward}` : ''}{p.lowerIsBetter ? ' · lower is better' : ''}</span></li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
+      </section>
+
+      <section aria-labelledby="m-rosters">
+        <h2 class="heading3" id="m-rosters">Rosters and tiers</h2>
+        <p>Each team's {cfg.roster.size} are its standard-contract players from NBA.com's roster feed. If a team has only {cfg.roster.size - 1} standard contracts, its two-way player with the most minutes fills the last spot and is labelled Two-Way.</p>
+        <ul>
+          <li><strong>Starters ({cfg.roster.starters})</strong>: the most games started, with minutes per game breaking ties.</li>
+          <li><strong>Substitutes ({cfg.roster.substitutes})</strong>: the next {cfg.roster.substitutes} by minutes per game.</li>
+          <li><strong>Reserves</strong>: everyone else on the 15.</li>
+        </ul>
+        <p>Positions come from NBA.com. Players with two positions are grouped by the first one listed, so a G-F is a guard.</p>
+      </section>
+
+      <section aria-labelledby="m-small">
+        <h2 class="heading3" id="m-small">Small samples</h2>
+        <p>Everyone is rated, including players who have barely played. A player with fewer than {cfg.smallSample.minGP} games or under {cfg.smallSample.minMPG} minutes per game gets a <span class="tag tag--small">Small sample</span> badge. Treat those ratings as provisional. The adjustments above pull them toward average, but early-season numbers still move fast.</p>
+      </section>
+
+      <section aria-labelledby="m-fresh">
+        <h2 class="heading3" id="m-fresh">Data freshness</h2>
+        <p>A scheduled GitHub Actions job runs every three hours. It downloads the data, recomputes every rating, runs the tests and redeploys the site. The browser never talks to NBA.com directly: NBA.com doesn't allow that, so the site reads the JSON files the job produces.</p>
+        <ul>
+          <li>First choice: <code>stats.nba.com</code>, which provides everything above.</li>
+          <li>Fallback: <code>cdn.nba.com</code> box scores. These rebuild the per-game numbers, but they don't include tracking data, so the last good skills and advanced numbers are reused and flagged.</li>
+          <li>If both fail, the previous data stays up unchanged. Empty data is never published.</li>
+        </ul>
+        <p class="fresh body-bold">This build: {sourceLabel[META.source] ?? META.source} · <time data-updated datetime={META.lastUpdated}>{META.lastUpdated}</time>{META.stale?.skills ? ' · skills carried over from the previous update' : ''}</p>
+        <p>The full source code and <a class="ulink" href={`${REPO_URL}/blob/main/config/ratings.config.json`}>the config file behind every number on this page</a> are on GitHub.</p>
+      </section>
+    </article>
+  </div>
+</Base>
+
+<style>
+  .meth__body { max-width: 72ch; margin: 0 auto; }
+  .meth__body > section { margin: 0 0 72px; }
+  .meth__body h2 { margin-bottom: 20px; }
+  .meth__body p, .meth__body li { color: rgba(255, 255, 255, 0.82); }
+  .meth__body strong { font-weight: 600; color: var(--fg); }
+  .meth__body ul { padding-left: 1.1em; }
+  .meth__body li { margin: 6px 0; }
+  .formula {
+    margin: 22px 0; padding: 18px 20px; background: var(--bg-deep); border-left: 2px solid var(--accent); overflow-x: auto;
+    font: 400 0.95rem/1.5 var(--font-body);
+  }
+  code { font-family: var(--font-body); font-weight: 600; }
+  .tscroll { overflow-x: auto; margin: 22px 0; }
+  .mtable { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+  .mtable th, .mtable td { padding: 10px 12px; border-bottom: 1px solid var(--rule); text-align: left; vertical-align: top; }
+  .mtable thead th { font: 800 0.625rem/1.2 var(--font-label); text-transform: uppercase; color: var(--fg-muted); }
+  .mtable tbody th { font: 400 1.1rem/1.1 var(--font-display); text-transform: uppercase; }
+  .mtable__sub { display: block; margin-top: 6px; font: 300 0.75rem var(--font-body); text-transform: none; color: var(--fg-muted); }
+  .mtable .num { text-align: right; }
+  .skills { display: grid; gap: 40px; margin-top: 32px; }
+  .skill { border-top: 1px solid var(--rule); padding-top: 22px; }
+  .skill__src { color: var(--fg-muted); font-size: 0.625rem; }
+  .skill__src code { text-transform: none; font-size: 0.75rem; word-break: break-all; }
+  .skill__parts { list-style: none; padding: 0 !important; }
+  .skill__parts li { display: flex; justify-content: space-between; gap: 16px; padding: 8px 0; border-bottom: 1px dashed var(--rule); flex-wrap: wrap; }
+  .skill__parts li span:last-child { color: var(--fg-muted); font-size: var(--small); }
+  .fresh { color: var(--fg-muted); }
+</style>
