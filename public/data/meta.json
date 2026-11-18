@@ -1,19 +1,19 @@
 {
  "season": "2026-27",
  "seasonType": "Regular Season",
- "source": "cdn",
- "fetchedFrom": "cdn",
- "lastUpdated": "2026-11-18T11:36:02Z",
+ "source": "local",
+ "fetchedFrom": "stats",
+ "lastUpdated": "2026-11-18T12:50:11Z",
  "stale": {
-  "skills": true,
-  "advanced": true,
-  "rosters": true
+  "skills": false,
+  "advanced": false,
+  "rosters": false
  },
- "previousLastUpdated": "2026-11-18T02:59:08Z",
+ "previousLastUpdated": "2026-11-18T11:36:02Z",
  "counts": {
   "players": 450,
   "teams": 30,
-  "smallSample": 123
+  "smallSample": 122
  },
  "config": {
   "$comment": "Every number that shapes a rating lives here. Edit, then run `npm run compute` (or wait for the next scheduled update). Weights inside a group are relative; group weights must add up to 1.",
