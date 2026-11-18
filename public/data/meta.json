@@ -3,13 +3,13 @@
  "seasonType": "Regular Season",
  "source": "local",
  "fetchedFrom": "stats",
- "lastUpdated": "2026-11-17T21:46:52Z",
+ "lastUpdated": "2026-11-18T00:46:52Z",
  "stale": {
   "skills": false,
   "advanced": false,
   "rosters": false
  },
- "previousLastUpdated": "2026-11-17T18:46:53Z",
+ "previousLastUpdated": "2026-11-17T21:46:52Z",
  "counts": {
   "players": 450,
   "teams": 30,
